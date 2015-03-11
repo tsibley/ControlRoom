@@ -1,0 +1,15 @@
+---
+name: foo bar
+runner:
+  name: Make
+  dir: test/foo
+  args:
+    - "-j"
+    - "-l4"
+  vars:
+    who: Thomas
+#  targets_cmd: 'printf "%s\n" one two three'
+  targets:
+    - hello
+    - pwd
+    - whoops
