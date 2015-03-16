@@ -171,7 +171,7 @@ package ControlRoom::Pipeline {
         return {
             name        => $self->name,
             description => $self->description,
-            runner      => ref($self->runner) =~ s/^ControlRoom::Runner:://r,
+            runner      => $self->runner->as_hash,
             targets     => $self->targets,
         };
     }
@@ -188,8 +188,18 @@ package ControlRoom::Runner {
         isa      => ArrayRef[Str],
     );
 
+    has name => (
+        is  => 'lazy',
+        isa => Str,
+    );
+
     requires '_build_targets';
     requires 'run_target';
+
+    sub _build_name {
+        my $self = shift;
+        return ref($self) =~ s/^ControlRoom::Runner:://r;
+    }
 }
 
 package ControlRoom::Runner::Make {
@@ -276,6 +286,14 @@ package ControlRoom::Runner::Make {
             use autodie ':all';
             system(@cmd);
         };
+    }
+
+    sub as_hash {
+        my $self = shift;
+        return {
+            name => $self->name,
+            dir  => $self->dir->stringify,
+        }
     }
 }
 
