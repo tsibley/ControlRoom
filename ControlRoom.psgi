@@ -90,7 +90,7 @@ package ControlRoom {
         my $data = shift;
         return [
             HTTP_OK,
-            [ 'Content-Type' => 'application/json' ],
+            [ 'Content-Type' => 'application/json; charset=utf-8' ],
             [ encode_json($data) ],
         ];
     }
