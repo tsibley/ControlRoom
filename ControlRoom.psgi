@@ -154,6 +154,11 @@ package ControlRoom::Pipeline {
         isa      => Str,
     );
 
+    has description => (
+        is  => 'ro',
+        isa => Str,
+    );
+
     has runner => (
         required => 1,
         is       => 'ro',
@@ -164,9 +169,10 @@ package ControlRoom::Pipeline {
     sub as_hash {
         my $self = shift;
         return {
-            name    => $self->name,
-            runner  => ref($self->runner) =~ s/^ControlRoom::Runner:://r,
-            targets => $self->targets,
+            name        => $self->name,
+            description => $self->description,
+            runner      => ref($self->runner) =~ s/^ControlRoom::Runner:://r,
+            targets     => $self->targets,
         };
     }
 }

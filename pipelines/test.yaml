@@ -1,5 +1,6 @@
 ---
-name: foo bar
+name: foobar
+description: foo bar
 runner:
   name: Make
   dir: test/foo
