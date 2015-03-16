@@ -15,6 +15,7 @@ package ControlRoom {
     use YAML::Tiny;
     use Try::Tiny;
     use JSON::MaybeXS;
+    use List::MoreUtils qw< all >;
 
     use namespace::clean;
     use experimental qw< postderef >;
@@ -113,11 +114,11 @@ package ControlRoom {
                 'GET + ~' => sub {
                     $self->json($pipeline->as_hash);
                 },
-                'POST + /run/*' => sub {
-                    my $target = $_[1];
+                'POST + /run + %@targets=' => sub {
+                    my $targets = $_[1];
 
-                    return [ HTTP_NOT_FOUND, [], [] ]
-                        unless $pipeline->known_target($target);
+                    return [ HTTP_BAD_REQUEST, [], [] ]
+                        unless all { $pipeline->known_target($_) } @$targets;
 
                     my %result = (
                         stdout  => undef,
@@ -129,7 +130,7 @@ package ControlRoom {
                     );
 
                     try {
-                        ($result{stdout}, $result{stderr}) = $pipeline->run_target($target);
+                        ($result{stdout}, $result{stderr}) = $pipeline->run_targets(@$targets);
                         $result{success} = \1;
                     } catch {
                         $result{message} = "$_";
@@ -163,7 +164,7 @@ package ControlRoom::Pipeline {
         required => 1,
         is       => 'ro',
         isa      => ConsumerOf['ControlRoom::Runner'],
-        handles  => [qw[ targets run_target known_target ]],
+        handles  => [qw[ targets run_targets known_target ]],
     );
 
     sub as_hash {
@@ -194,7 +195,7 @@ package ControlRoom::Runner {
     );
 
     requires '_build_targets';
-    requires 'run_target';
+    requires 'run_targets';
 
     sub _build_name {
         my $self = shift;
@@ -257,16 +258,14 @@ package ControlRoom::Runner::Make {
         return $known->{$target};
     }
 
-    sub run_target {
-        my $self   = shift;
-        my $target = shift;
-        die "Unknown target"
-            unless $self->known_target($target);
+    sub run_targets {
+        my $self    = shift;
+        my @targets = @_;
         my @make = (
             "make",
             $self->args->@*,
             "-C" => $self->dir->stringify,
-            $target,
+            @targets,
             $self->vars_as_string || ()
         );
         return $self->capture_system(@make);
