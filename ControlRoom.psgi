@@ -15,10 +15,28 @@ package ControlRoom {
     use YAML::Tiny;
     use Try::Tiny;
     use JSON::MaybeXS;
+    use Plack::App::File;
     use List::MoreUtils qw< all >;
 
     use namespace::clean;
     use experimental qw< postderef >;
+
+    has console_dir => (
+        is      => 'ro',
+        isa     => InstanceOf['Path::Tiny'],
+        coerce  => sub { ref $_[0] ? $_[0] : path($_[0]) },
+        default => sub { path($Bin)->child("console/") },
+    );
+
+    has console_app => (
+        is  => 'lazy',
+        isa => CodeRef,
+    );
+
+    sub _build_console_app {
+        my $self = shift;
+        return Plack::App::File->new(root => $self->console_dir)->to_app;
+    }
 
     has config_dir => (
         is      => 'ro',
@@ -141,6 +159,9 @@ package ControlRoom {
                 },
             );
         },
+        '/'           => sub { [ HTTP_TEMPORARY_REDIRECT, [ Location => '/console/' ], [] ] },
+        '/console...' => sub { redispatch_to '/static/index.html' },
+        '/static...'  => sub { shift->console_app },
     }
 }
 

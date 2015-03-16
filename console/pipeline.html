@@ -1,0 +1,41 @@
+<div class="row">
+  <div class="col-md-8">
+    <h1>
+      {{ pipeline.name }}
+      <small ng-if="pipeline.description" style="display: block">{{ pipeline.description }}</small>
+    </h1>
+
+    <h3>Status</h3>
+    <p><mark><span class="glyphicon glyphicon-ok"></span> Up-to-date</mark></p>
+
+    <h3>Targets</h3>
+    <form role="form" ng-controller="Pipeline.RunTargets" ng-submit="submit()" name="RunTargets" class="form">
+      <div class="checkbox" ng-repeat="target in pipeline.targets">
+        <label>
+          <input type="checkbox" checklist-model="selected" checklist-value="target">
+          {{target}}
+        </label>
+      </div>
+      <p>
+        <button class="btn btn-success" ng-disabled="!selected.length || RunTargets.$invalid">
+          <span class="glyphicon glyphicon-play"></span>
+          Run selected targets
+        </button>
+      </p>
+      <p>{{ results }}</p>
+    </form>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><span class="glyphicon glyphicon-cog"></span> About this pipeline</h3>
+      </div>
+      <table class="table">
+        <tr ng-repeat="(key, value) in pipeline.runner">
+          <th>runner {{ key }}</th>
+          <td>{{ value }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
